@@ -6,13 +6,7 @@ const fs = require("fs");
 
 const app = express();
 
-// ✅ CORS
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type"]
-}));
-
+app.use(cors());
 app.use(express.json());
 
 const DB = "./db.json";
@@ -35,7 +29,7 @@ app.post("/signup", (req, res) => {
   let { username, password } = req.body;
 
   if (db.users.find(u => u.username === username)) {
-    return res.json({ success: false, message: "User exists" });
+    return res.json({ success: false });
   }
 
   db.users.push({ username, password, history: [] });
@@ -73,7 +67,7 @@ app.get("/history/:username", (req, res) => {
   res.json(user ? user.history : []);
 });
 
-// ── 🤖 AI NOTES ──
+// ── 🤖 AI NOTES (GROQ FREE) ──
 app.post("/ai-notes", async (req, res) => {
   const { topic } = req.body;
 
@@ -81,19 +75,19 @@ app.post("/ai-notes", async (req, res) => {
     return res.status(400).json({ error: "Topic required" });
   }
 
-  if (!process.env.OPENAI_API_KEY) {
-    return res.status(500).json({ error: "API key missing" });
+  if (!process.env.GROQ_API_KEY) {
+    return res.status(500).json({ error: "GROQ API key missing" });
   }
 
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": "Bearer " + process.env.OPENAI_API_KEY,
+        "Authorization": "Bearer " + process.env.GROQ_API_KEY,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "llama3-8b-8192",
         messages: [
           {
             role: "user",
@@ -116,8 +110,8 @@ Keep it short and exam-focused.`
     const data = await response.json();
 
     if (!data.choices) {
-      console.error("OpenAI Error:", data);
-      return res.status(500).json({ error: "Invalid AI response" });
+      console.error("GROQ ERROR:", JSON.stringify(data, null, 2));
+      return res.status(500).json({ error: data });
     }
 
     res.json({
@@ -132,7 +126,7 @@ Keep it short and exam-focused.`
 
 // ── ROOT ──
 app.get("/", (req, res) => {
-  res.send("✅ NotesPro Backend Running");
+  res.send("✅ NotesPro Backend Running (Groq)");
 });
 
 // ── SERVER ──
