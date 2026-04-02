@@ -3,25 +3,25 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
-const fetch = require("node-fetch");
 
 const app = express();
 
-// ✅ FIXED CORS (IMPORTANT)
-const corsOptions = {
+// ✅ CORS
+app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type"]
-};
+}));
 
-app.use(cors(corsOptions));
 app.use(express.json());
-app.options("*", cors(corsOptions)); // ✅ handle preflight
 
 const DB = "./db.json";
 
 // ── DB helpers ──
 function readDB() {
+  if (!fs.existsSync(DB)) {
+    fs.writeFileSync(DB, JSON.stringify({ users: [] }, null, 2));
+  }
   return JSON.parse(fs.readFileSync(DB));
 }
 
@@ -35,7 +35,7 @@ app.post("/signup", (req, res) => {
   let { username, password } = req.body;
 
   if (db.users.find(u => u.username === username)) {
-    return res.json({ success: false });
+    return res.json({ success: false, message: "User exists" });
   }
 
   db.users.push({ username, password, history: [] });
@@ -97,19 +97,17 @@ app.post("/ai-notes", async (req, res) => {
         messages: [
           {
             role: "user",
-            content: `
-Create FAST REVISION NOTES for exam.
+            content: `Create FAST REVISION NOTES for exam.
 
 Topic: ${topic}
 
 Format:
 1. Definition (2 lines)
 2. Key Points (5-6 bullets)
-3. Important Terms (short)
+3. Important Terms
 4. Quick Summary (3 lines)
 
-Keep it simple, short, and exam-focused.
-`
+Keep it short and exam-focused.`
           }
         ]
       })
