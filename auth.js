@@ -1,6 +1,6 @@
 const API = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
   ? "http://localhost:3000"
-  : "https://notespro-backend.onrender.com";
+  : "const API = "https://notespro-research-console.onrender.com";
 
 let isLogin = true;
 
