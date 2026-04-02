@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NotesPro — Research Console</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Institutional Top Banner -->
+  <div class="inst-banner">
+    <div class="left">
+      <div class="seal-sm">⚡</div>
+      <span class="inst-name">NotesPro — Academic Research Console</span>
+    </div>
+    <div class="right">
+      <span id="userDisplay"></span>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- Main Application -->
+  <div class="app">
+
+    <!-- Page Title -->
+    <div class="page-title-bar">
+      <h2>Knowledge Research Module</h2>
+      <span class="course-tag">Wikipedia API · Server-side Storage</span>
+    </div>
+
+    <!-- Backend Status -->
+    <div class="status-bar">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Checking server connection…</span>
+    </div>
+
+    <!-- Search Panel -->
+    <div class="search-panel">
+      <div class="search-panel-label">Search Query</div>
+      <div class="search-row">
+        <div class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="topic" placeholder="Enter a topic to generate structured notes…">
+        </div>
+        <button class="btn-search" onclick="getNotes()">Generate</button>
+      </div>
+      <div class="tool-row">
+        <button class="btn-tool" onclick="startVoice()">🎤 Voice Input</button>
+        <button class="btn-tool" onclick="downloadPDF()">📄 Export PDF</button>
+      </div>
+    </div>
+
+    <!-- Suggestions -->
+    <ul id="suggestions"></ul>
+
+    <!-- Loader -->
+    <div id="loader" class="loader hidden">
+      <div class="loader-ring"></div>
+      <span>Retrieving data, please wait…</span>
+    </div>
+
+    <!-- Output -->
+    <div id="output"></div>
+
+    <!-- History -->
+    <div class="history">
+      <div class="history-header">
+        <span>📜</span>
+        <h3>Search History</h3>
+      </div>
+      <div class="history-body">
+        <ul id="historyList"></ul>
+      </div>
+    </div>
+
+  </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

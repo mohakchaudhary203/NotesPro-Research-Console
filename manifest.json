@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "NotesPro",
+  "version": "2.0",
+  "description": "Academic Research Console",
+  "action": {
+    "default_popup": "index.html"
+  },
+  "permissions": ["storage"]
+}

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NotesPro — Student Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="center">
+
+<div class="auth-box">
+
+  <div class="auth-header">
+    <div class="institution-seal">⚡</div>
+    <h1>NotesPro</h1>
+    <p class="subtitle">Academic Knowledge System &nbsp;·&nbsp; v2.0</p>
+  </div>
+
+  <div class="auth-body">
+    <h2 id="title">Student Login</h2>
+
+    <div class="form-field">
+      <label for="username">Student ID / Username</label>
+      <div class="input-wrap">
+        <span class="field-icon">👤</span>
+        <input type="text" id="username" placeholder="Enter your username" autocomplete="username">
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label for="password">Password</label>
+      <div class="input-wrap">
+        <span class="field-icon">🔒</span>
+        <input type="password" id="password" placeholder="Enter your password"
+          autocomplete="current-password"
+          onkeypress="if(event.key==='Enter') handleAuth()">
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="handleAuth()">Proceed →</button>
+
+    <p id="switch">New student? <span>Create an account</span></p>
+  </div>
+
+</div>
+
+<script src="auth.js"></script>
+</body>
+</html>
