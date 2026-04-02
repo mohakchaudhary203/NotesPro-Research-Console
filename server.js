@@ -6,8 +6,17 @@ const fs = require("fs");
 const fetch = require("node-fetch");
 
 const app = express();
-app.use(cors({ origin: "*" }));
+
+// ✅ FIXED CORS (IMPORTANT)
+const corsOptions = {
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type"]
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
+app.options("*", cors(corsOptions)); // ✅ handle preflight
 
 const DB = "./db.json";
 
@@ -109,7 +118,7 @@ Keep it simple, short, and exam-focused.
     const data = await response.json();
 
     if (!data.choices) {
-      console.error(data);
+      console.error("OpenAI Error:", data);
       return res.status(500).json({ error: "Invalid AI response" });
     }
 
