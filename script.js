@@ -1,8 +1,4 @@
-const API =
-  (window.location.hostname === "localhost" ||
-   window.location.hostname === "127.0.0.1")
-    ? "http://localhost:3000"
-    : "https://notespro-research-console.onrender.com";
+const API = "https://notespro-research-console.onrender.com";
 
 const user = localStorage.getItem("loggedInUser");
 if (!user) window.location.href = "index.html";
@@ -82,9 +78,14 @@ input.addEventListener("keydown", e => {
   }
 });
 
-// ── AI NOTES ──
+// ── 🤖 AI NOTES ──
 async function getNotes() {
-  if (!input.value.trim()) return alert("Enter topic");
+  const topic = input.value.trim();
+
+  if (!topic) {
+    alert("Enter topic first");
+    return;
+  }
 
   loader.classList.remove("hidden");
   document.getElementById("output").innerHTML = "";
@@ -95,29 +96,53 @@ async function getNotes() {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ topic: input.value })
+      body: JSON.stringify({ topic })
     });
 
     const data = await res.json();
 
-    if (!data.text) throw new Error();
+    // 🔥 Better error handling
+    if (!res.ok) {
+      console.error("Server error:", data);
+      throw new Error(data.error || "Server failed");
+    }
+
+    if (!data.text) {
+      throw new Error("No data received");
+    }
+
+    const today = new Date().toLocaleDateString();
 
     document.getElementById("output").innerHTML = `
       <div class="card">
-        <h2>${input.value}</h2>
-        <div style="white-space: pre-line">${data.text}</div>
+        <div style="display:flex; justify-content:space-between;">
+          <span>AI Notes</span>
+          <span>${today}</span>
+        </div>
+
+        <h2>${topic}</h2>
+
+        <div style="white-space: pre-line; line-height:1.6; margin-top:10px;">
+          ${data.text}
+        </div>
       </div>
     `;
 
-    saveHistory(input.value);
+    saveHistory(topic);
 
-  } catch {
-    document.getElementById("output").innerHTML =
-      "<p>⚠ Failed to generate notes</p>";
+  } catch (err) {
+    console.error("Frontend error:", err);
+
+    document.getElementById("output").innerHTML = `
+      <div class="card" style="text-align:center;padding:20px;">
+        ⚠ Server unreachable or AI failed <br><br>
+        Try again in 20 seconds (Render sleep)
+      </div>
+    `;
   }
 
   loader.classList.add("hidden");
-  checkServerStatus();
+  setTimeout(() => checkServerStatus(), 1000);
 }
 
 // ── HISTORY ──
