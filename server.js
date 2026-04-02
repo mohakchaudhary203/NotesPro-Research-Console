@@ -4,6 +4,10 @@ const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
 
+// ✅ FIX: fetch for Node (important for Render)
+const fetch = (...args) =>
+  import("node-fetch").then(({ default: fetch }) => fetch(...args));
+
 const app = express();
 
 app.use(cors());
@@ -42,7 +46,10 @@ app.post("/login", (req, res) => {
   let db = readDB();
   let { username, password } = req.body;
 
-  let user = db.users.find(u => u.username === username && u.password === password);
+  let user = db.users.find(
+    u => u.username === username && u.password === password
+  );
+
   res.json({ success: !!user });
 });
 
@@ -80,18 +87,20 @@ app.post("/ai-notes", async (req, res) => {
   }
 
   try {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + process.env.GROQ_API_KEY,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "llama3-8b-8192",
-        messages: [
-          {
-            role: "user",
-            content: `Create FAST REVISION NOTES for exam.
+    const response = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + process.env.GROQ_API_KEY,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "llama3-8b-8192",
+          messages: [
+            {
+              role: "user",
+              content: `Create FAST REVISION NOTES for exam.
 
 Topic: ${topic}
 
@@ -102,16 +111,18 @@ Format:
 4. Quick Summary (3 lines)
 
 Keep it short and exam-focused.`
-          }
-        ]
-      })
-    });
+            }
+          ]
+        })
+      }
+    );
 
     const data = await response.json();
 
+    // 🔥 Proper error logging
     if (!data.choices) {
       console.error("GROQ ERROR:", JSON.stringify(data, null, 2));
-      return res.status(500).json({ error: data });
+      return res.status(500).json({ error: "AI failed" });
     }
 
     res.json({
@@ -119,7 +130,7 @@ Keep it short and exam-focused.`
     });
 
   } catch (err) {
-    console.error("AI ERROR:", err);
+    console.error("SERVER ERROR:", err);
     res.status(500).json({ error: "AI failed" });
   }
 });
