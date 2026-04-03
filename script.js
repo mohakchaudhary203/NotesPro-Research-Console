@@ -118,26 +118,51 @@ function loadFromHistory(t) {
 }
 
 // 🔊 VOICE
+let voices = [];
+
+function loadVoices() {
+  voices = speechSynthesis.getVoices();
+}
+
+// load voices properly
+speechSynthesis.onvoiceschanged = loadVoices;
+
+// 🔊 SPEAK FUNCTION (FIXED)
 function speakNotes() {
   const text = document.getElementById("output").innerText;
 
+  if (!text) return alert("Generate notes first");
+
   const speech = new SpeechSynthesisUtterance(text);
+
   speech.rate = 1;
   speech.pitch = 1;
 
+  // pick best voice
+  const selectedVoice = voices.find(v => v.lang.includes("en")) || voices[0];
+  if (selectedVoice) speech.voice = selectedVoice;
+
+  speechSynthesis.cancel(); // stop previous
   speechSynthesis.speak(speech);
 }
 
 // 📄 DOWNLOAD
 function downloadNotes() {
-  const text = document.getElementById("output").innerText;
+  const element = document.getElementById("output");
 
-  const blob = new Blob([text], { type: "text/plain" });
-  const link = document.createElement("a");
+  if (!element.innerText.trim()) {
+    return alert("Generate notes first");
+  }
 
-  link.href = URL.createObjectURL(blob);
-  link.download = "notes.txt";
-  link.click();
+  const opt = {
+    margin: 0.5,
+    filename: "NotesPro.pdf",
+    image: { type: "jpeg", quality: 1 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
+  };
+
+  html2pdf().set(opt).from(element).save();
 }
 
 // LOGOUT
