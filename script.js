@@ -4,41 +4,26 @@ const user = localStorage.getItem("loggedInUser");
 if (!user) window.location.href = "index.html";
 
 const input = document.getElementById("topic");
-const suggestionsBox = document.getElementById("suggestions");
 const loader = document.getElementById("loader");
 const historyList = document.getElementById("historyList");
-const statusDot = document.getElementById("statusDot");
-const statusText = document.getElementById("statusText");
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("userDisplay").textContent = "👤 " + user;
-  checkServerStatus();
   loadHistory();
 });
 
-async function checkServerStatus() {
-  try {
-    const res = await fetch(`${API}/`);
-    if (res.ok) {
-      statusDot.className = "status-dot online";
-      statusText.textContent = "Server connected";
-    } else throw new Error();
-  } catch {
-    statusDot.className = "status-dot offline";
-    statusText.textContent = "Server sleeping...";
-  }
-}
-
+// 🔥 MAIN AI FUNCTION (IMPROVED)
 async function getNotes() {
   const topic = input.value.trim();
   if (!topic) return alert("Enter topic");
 
   loader.classList.remove("hidden");
-  document.getElementById("output").innerHTML = "";
+  document.getElementById("output").innerHTML = "<p>Generating smart notes...</p>";
 
   try {
     let res;
 
+    // retry logic (Render sleep fix)
     for (let i = 0; i < 2; i++) {
       try {
         res = await fetch(`${API}/ai-notes`, {
@@ -57,10 +42,18 @@ async function getNotes() {
 
     if (!data.text) throw new Error();
 
+    // 🔥 FORMAT OUTPUT CLEANLY
+    const formatted = data.text
+      .replace(/\n/g, "<br>")
+      .replace(/📌/g, "<br><br>📌")
+      .replace(/- /g, "• ");
+
     document.getElementById("output").innerHTML = `
       <div class="card">
         <h2>${topic}</h2>
-        <div style="white-space: pre-line">${data.text}</div>
+        <div class="notes-content">
+          ${formatted}
+        </div>
       </div>
     `;
 
@@ -74,6 +67,7 @@ async function getNotes() {
   loader.classList.add("hidden");
 }
 
+// HISTORY
 async function saveHistory(topic) {
   try {
     await fetch(`${API}/history`, {
