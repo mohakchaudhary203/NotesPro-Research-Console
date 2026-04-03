@@ -12,18 +12,29 @@ document.addEventListener("DOMContentLoaded", () => {
   loadHistory();
 });
 
-// 🔥 MAIN AI FUNCTION (IMPROVED)
+// 🔥 FORMATTER (BIG UPGRADE)
+function formatNotes(text) {
+  return text
+    .replace(/\n\n/g, "<br><br>")
+    .replace(/\n/g, "<br>")
+    .replace(/📌/g, "<br><br><strong style='color:#60a5fa;'>📌")
+    .replace(/:\n/g, ":</strong><br>")
+    .replace(/- /g, "• ");
+}
+
+// 🔥 MAIN AI FUNCTION
 async function getNotes() {
   const topic = input.value.trim();
   if (!topic) return alert("Enter topic");
 
   loader.classList.remove("hidden");
-  document.getElementById("output").innerHTML = "<p>Generating smart notes...</p>";
+  document.getElementById("output").innerHTML =
+    "<p>🧠 Generating detailed notes...</p>";
 
   try {
     let res;
 
-    // retry logic (Render sleep fix)
+    // retry logic (handles Render sleep)
     for (let i = 0; i < 2; i++) {
       try {
         res = await fetch(`${API}/ai-notes`, {
@@ -42,16 +53,19 @@ async function getNotes() {
 
     if (!data.text) throw new Error();
 
-    // 🔥 FORMAT OUTPUT CLEANLY
-    const formatted = data.text
-      .replace(/\n/g, "<br>")
-      .replace(/📌/g, "<br><br>📌")
-      .replace(/- /g, "• ");
+    const formatted = formatNotes(data.text);
 
     document.getElementById("output").innerHTML = `
       <div class="card">
         <h2>${topic}</h2>
-        <div class="notes-content">
+
+        <div style="
+          line-height:1.9;
+          font-size:15px;
+          max-height:500px;
+          overflow-y:auto;
+          padding-right:10px;
+        ">
           ${formatted}
         </div>
       </div>
@@ -59,9 +73,15 @@ async function getNotes() {
 
     saveHistory(topic);
 
-  } catch {
-    document.getElementById("output").innerHTML =
-      "<p>⚠ Server waking up... try again</p>";
+  } catch (err) {
+    console.error(err);
+
+    document.getElementById("output").innerHTML = `
+      <div class="card">
+        ⚠ Server waking up or AI error.<br><br>
+        Try again in a few seconds.
+      </div>
+    `;
   }
 
   loader.classList.add("hidden");
@@ -72,10 +92,11 @@ async function saveHistory(topic) {
   try {
     await fetch(`${API}/history`, {
       method: "POST",
-      headers: {"Content-Type":"application/json"},
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username: user, topic })
     });
   } catch {}
+
   loadHistory();
 }
 
@@ -85,7 +106,11 @@ async function loadHistory() {
     const data = await res.json();
 
     historyList.innerHTML = data.length
-      ? data.map(i => `<li onclick="loadFromHistory('${i}')">${i}</li>`).join("")
+      ? data
+          .map(
+            i => `<li onclick="loadFromHistory('${i}')">${i}</li>`
+          )
+          .join("")
       : "<li>No history</li>";
 
   } catch {
