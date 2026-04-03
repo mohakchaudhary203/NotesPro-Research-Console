@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadHistory();
 });
 
-// FORMATTER
+// ── FORMATTER ──
 function formatNotes(text) {
   return text
     .replace(/\n\n/g, "<br><br>")
@@ -23,7 +23,7 @@ function formatNotes(text) {
     .replace(/- /g, "• ");
 }
 
-// MAIN FUNCTION
+// ── MAIN AI FUNCTION ──
 async function getNotes() {
   const topic = input.value.trim();
   if (!topic) return alert("Enter topic");
@@ -56,7 +56,8 @@ async function getNotes() {
 
         <br>
         <button onclick="speakNotes()">🔊 Listen</button>
-        <button onclick="downloadNotes()">📄 Download</button>
+        <button onclick="startVoiceSearch()">🎤 Speak Topic</button>
+        <button onclick="downloadNotes()">📄 Download PDF</button>
       </div>
     `;
 
@@ -64,7 +65,6 @@ async function getNotes() {
 
   } catch (err) {
     console.error(err);
-
     document.getElementById("output").innerHTML =
       "<p>⚠ Error. Try again.</p>";
   }
@@ -72,7 +72,7 @@ async function getNotes() {
   loader.classList.add("hidden");
 }
 
-// SAVE HISTORY
+// ── SAVE HISTORY ──
 async function saveHistory(topic) {
   try {
     const res = await fetch(`${API}/history`, {
@@ -96,7 +96,7 @@ async function saveHistory(topic) {
   loadHistory();
 }
 
-// LOAD HISTORY
+// ── LOAD HISTORY ──
 async function loadHistory() {
   try {
     const res = await fetch(`${API}/history/${user}`);
@@ -111,42 +111,61 @@ async function loadHistory() {
   }
 }
 
-// CLICK HISTORY
+// ── CLICK HISTORY ──
 function loadFromHistory(t) {
   input.value = t;
   getNotes();
 }
 
-// 🔊 VOICE
+// ── 🔊 VOICE LISTEN ──
 let voices = [];
 
 function loadVoices() {
   voices = speechSynthesis.getVoices();
 }
-
-// load voices properly
 speechSynthesis.onvoiceschanged = loadVoices;
 
-// 🔊 SPEAK FUNCTION (FIXED)
 function speakNotes() {
   const text = document.getElementById("output").innerText;
-
   if (!text) return alert("Generate notes first");
 
   const speech = new SpeechSynthesisUtterance(text);
-
   speech.rate = 1;
   speech.pitch = 1;
 
-  // pick best voice
   const selectedVoice = voices.find(v => v.lang.includes("en")) || voices[0];
   if (selectedVoice) speech.voice = selectedVoice;
 
-  speechSynthesis.cancel(); // stop previous
+  speechSynthesis.cancel();
   speechSynthesis.speak(speech);
 }
 
-// 📄 DOWNLOAD
+// ── 🎤 VOICE SEARCH ──
+function startVoiceSearch() {
+  if (!("webkitSpeechRecognition" in window)) {
+    return alert("Voice search not supported");
+  }
+
+  const recognition = new webkitSpeechRecognition();
+  recognition.lang = "en-US";
+
+  recognition.start();
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    console.log("Voice:", transcript);
+
+    input.value = transcript;
+    getNotes();
+  };
+
+  recognition.onerror = (e) => {
+    console.error(e);
+    alert("Voice error");
+  };
+}
+
+// ── 📄 DOWNLOAD PDF ──
 function downloadNotes() {
   const element = document.getElementById("output");
 
@@ -159,13 +178,17 @@ function downloadNotes() {
     filename: "NotesPro.pdf",
     image: { type: "jpeg", quality: 1 },
     html2canvas: { scale: 2 },
-    jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
+    jsPDF: {
+      unit: "in",
+      format: "a4",
+      orientation: "portrait"
+    }
   };
 
   html2pdf().set(opt).from(element).save();
 }
 
-// LOGOUT
+// ── LOGOUT ──
 function logout() {
   localStorage.removeItem("loggedInUser");
   window.location.href = "index.html";
