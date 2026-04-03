@@ -96,7 +96,9 @@ app.post("/ai-notes", async (req, res) => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "llama3-8b-8192",
+          // ✅ FIXED MODEL (IMPORTANT)
+          model: "llama-3.1-8b-instant",
+
           messages: [
             {
               role: "user",
@@ -105,10 +107,12 @@ app.post("/ai-notes", async (req, res) => {
 Topic: ${topic}
 
 Format:
-1. Definition
-2. Key Points
+1. Definition (2 lines)
+2. Key Points (5-6 bullets)
 3. Important Terms
-4. Summary`
+4. Quick Summary (3 lines)
+
+Keep it simple and exam-focused.`
             }
           ]
         })
@@ -118,7 +122,7 @@ Format:
     const data = await response.json();
 
     if (!data.choices) {
-      console.error(data);
+      console.error("GROQ ERROR:", data);
       return res.status(500).json({ error: "AI failed" });
     }
 
@@ -127,7 +131,7 @@ Format:
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("SERVER ERROR:", err);
     res.status(500).json({ error: "AI failed" });
   }
 });
