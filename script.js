@@ -9,10 +9,11 @@ const historyList = document.getElementById("historyList");
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("userDisplay").textContent = "👤 " + user;
+  console.log("Logged in user:", user);
   loadHistory();
 });
 
-// 🔥 FORMATTER (BIG UPGRADE)
+// 🔥 FORMATTER
 function formatNotes(text) {
   return text
     .replace(/\n\n/g, "<br><br>")
@@ -34,7 +35,7 @@ async function getNotes() {
   try {
     let res;
 
-    // retry logic (handles Render sleep)
+    // retry logic (Render sleep fix)
     for (let i = 0; i < 2; i++) {
       try {
         res = await fetch(`${API}/ai-notes`, {
@@ -51,14 +52,13 @@ async function getNotes() {
 
     const data = await res.json();
 
-    if (!data.text) throw new Error();
+    if (!data.text) throw new Error("No AI response");
 
     const formatted = formatNotes(data.text);
 
     document.getElementById("output").innerHTML = `
       <div class="card">
         <h2>${topic}</h2>
-
         <div style="
           line-height:1.9;
           font-size:15px;
@@ -71,10 +71,11 @@ async function getNotes() {
       </div>
     `;
 
-    saveHistory(topic);
+    // ✅ SAVE HISTORY AFTER SUCCESS
+    await saveHistory(topic);
 
   } catch (err) {
-    console.error(err);
+    console.error("AI ERROR:", err);
 
     document.getElementById("output").innerHTML = `
       <div class="card">
@@ -87,42 +88,56 @@ async function getNotes() {
   loader.classList.add("hidden");
 }
 
-// HISTORY
+// 🔥 SAVE HISTORY (FIXED)
 async function saveHistory(topic) {
   try {
-    await fetch(`${API}/history`, {
+    const res = await fetch(`${API}/history`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: user, topic })
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: user,
+        topic: topic
+      })
     });
-  } catch {}
 
+    const data = await res.json();
+    console.log("History saved:", data);
+
+  } catch (err) {
+    console.error("History save failed:", err);
+  }
+
+  // reload after saving
   loadHistory();
 }
 
+// 🔥 LOAD HISTORY (FIXED)
 async function loadHistory() {
   try {
     const res = await fetch(`${API}/history/${user}`);
     const data = await res.json();
 
+    console.log("History loaded:", data);
+
     historyList.innerHTML = data.length
-      ? data
-          .map(
-            i => `<li onclick="loadFromHistory('${i}')">${i}</li>`
-          )
-          .join("")
+      ? data.map(i => `<li onclick="loadFromHistory('${i}')">${i}</li>`).join("")
       : "<li>No history</li>";
 
-  } catch {
+  } catch (err) {
+    console.error("History load error:", err);
     historyList.innerHTML = "<li>Error loading</li>";
   }
 }
 
+// LOAD FROM HISTORY
 function loadFromHistory(t) {
   input.value = t;
   getNotes();
 }
 
+// LOGOUT
 function logout() {
   localStorage.removeItem("loggedInUser");
   window.location.href = "index.html";
