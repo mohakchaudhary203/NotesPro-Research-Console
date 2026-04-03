@@ -15,7 +15,7 @@ app.use(express.json());
 
 const DB = "./db.json";
 
-// DB helpers
+// ── DB HELPERS ──
 function readDB() {
   if (!fs.existsSync(DB)) {
     fs.writeFileSync(DB, JSON.stringify({ users: [] }, null, 2));
@@ -27,7 +27,7 @@ function writeDB(data) {
   fs.writeFileSync(DB, JSON.stringify(data, null, 2));
 }
 
-// AUTH
+// ── AUTH ──
 app.post("/signup", (req, res) => {
   let db = readDB();
   let { username, password } = req.body;
@@ -38,6 +38,8 @@ app.post("/signup", (req, res) => {
 
   db.users.push({ username, password, history: [] });
   writeDB(db);
+
+  console.log("✅ New user:", username);
 
   res.json({ success: true });
 });
@@ -50,31 +52,57 @@ app.post("/login", (req, res) => {
     u => u.username === username && u.password === password
   );
 
+  console.log("🔐 Login attempt:", username);
+
   res.json({ success: !!user });
 });
 
-// HISTORY
+// ── HISTORY (FIXED + DEBUG) ──
 app.post("/history", (req, res) => {
-  let db = readDB();
-  let { username, topic } = req.body;
+  try {
+    let db = readDB();
+    let { username, topic } = req.body;
 
-  let user = db.users.find(u => u.username === username);
-  if (!user) return res.json({ success: false });
+    console.log("👉 Incoming history:", username, topic);
 
-  user.history.unshift(topic);
-  user.history = [...new Set(user.history)].slice(0, 10);
+    if (!username || !topic) {
+      return res.status(400).json({ success: false });
+    }
 
-  writeDB(db);
-  res.json({ success: true });
+    let user = db.users.find(u => u.username === username);
+
+    if (!user) {
+      console.log("❌ User not found");
+      return res.json({ success: false });
+    }
+
+    if (!user.history) user.history = [];
+
+    user.history.unshift(topic);
+    user.history = [...new Set(user.history)].slice(0, 10);
+
+    writeDB(db);
+
+    console.log("✅ History saved:", user.history);
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error("🔥 History ERROR:", err);
+    res.status(500).json({ success: false });
+  }
 });
 
 app.get("/history/:username", (req, res) => {
   let db = readDB();
   let user = db.users.find(u => u.username === req.params.username);
+
+  console.log("📜 Load history for:", req.params.username);
+
   res.json(user ? user.history : []);
 });
 
-// 🔥 AI NOTES (MAX QUALITY VERSION)
+// ── AI NOTES (GROQ FINAL) ──
 app.post("/ai-notes", async (req, res) => {
   const { topic } = req.body;
 
@@ -97,66 +125,29 @@ app.post("/ai-notes", async (req, res) => {
         },
         body: JSON.stringify({
           model: "llama-3.1-8b-instant",
-
           messages: [
             {
               role: "user",
-              content: `You are an expert teacher, mentor, and exam strategist.
+              content: `You are an expert teacher.
 
-Create VERY DETAILED, HIGH-QUALITY notes.
+Create detailed, structured exam notes.
 
 Topic: ${topic}
 
-Follow structure:
+Include:
+- Definition
+- Explanation
+- Key Points
+- Terms
+- Examples
+- Applications
+- Advantages
+- Disadvantages
+- Mistakes
+- Tips
+- Summary
 
-📌 1. Definition:
-- 2–3 lines
-
-📌 2. Core Concept:
-- Explain in 2–3 short paragraphs
-
-📌 3. Why It Matters:
-- Importance of topic
-
-📌 4. Key Points:
-- 8–10 bullets
-
-📌 5. Important Terms:
-- 8–12 keywords with meanings
-
-📌 6. Examples:
-- 3–4 examples
-
-📌 7. Applications:
-- 4–6 uses
-
-📌 8. Advantages:
-- 4–5 points
-
-📌 9. Disadvantages:
-- 3–4 points
-
-📌 10. Common Mistakes:
-- 3–5 points
-
-📌 11. Exam Tips:
-- What to write for full marks
-
-📌 12. Quick Revision:
-- Short bullets
-
-📌 13. Memory Tricks:
-- Simple mnemonics
-
-📌 14. Summary:
-- 5–6 lines
-
-Rules:
-- Mix paragraphs + bullet points
-- Keep language simple
-- Avoid repetition
-- Make it exam-focused + easy to revise
-`
+Keep it clear and useful for exams.`
             }
           ]
         })
@@ -166,7 +157,7 @@ Rules:
     const data = await response.json();
 
     if (!data.choices) {
-      console.error("GROQ ERROR:", data);
+      console.error("❌ GROQ ERROR:", data);
       return res.status(500).json({ error: "AI failed" });
     }
 
@@ -175,16 +166,17 @@ Rules:
     });
 
   } catch (err) {
-    console.error("SERVER ERROR:", err);
+    console.error("🔥 AI ERROR:", err);
     res.status(500).json({ error: "AI failed" });
   }
 });
 
-// ROOT
+// ── ROOT ──
 app.get("/", (req, res) => {
-  res.send("✅ NotesPro Backend Running (Final)");
+  res.send("✅ NotesPro Backend Running (FINAL)");
 });
 
+// ── SERVER ──
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
