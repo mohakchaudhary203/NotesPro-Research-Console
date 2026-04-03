@@ -4,7 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
 
-// ✅ FIX: fetch for Node (important for Render)
+// fetch fix for Node
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
@@ -15,7 +15,7 @@ app.use(express.json());
 
 const DB = "./db.json";
 
-// ── DB helpers ──
+// DB helpers
 function readDB() {
   if (!fs.existsSync(DB)) {
     fs.writeFileSync(DB, JSON.stringify({ users: [] }, null, 2));
@@ -27,7 +27,7 @@ function writeDB(data) {
   fs.writeFileSync(DB, JSON.stringify(data, null, 2));
 }
 
-// ── AUTH ──
+// AUTH
 app.post("/signup", (req, res) => {
   let db = readDB();
   let { username, password } = req.body;
@@ -53,7 +53,7 @@ app.post("/login", (req, res) => {
   res.json({ success: !!user });
 });
 
-// ── HISTORY ──
+// HISTORY
 app.post("/history", (req, res) => {
   let db = readDB();
   let { username, topic } = req.body;
@@ -74,7 +74,7 @@ app.get("/history/:username", (req, res) => {
   res.json(user ? user.history : []);
 });
 
-// ── 🤖 AI NOTES (GROQ FREE) ──
+// AI NOTES (Groq)
 app.post("/ai-notes", async (req, res) => {
   const { topic } = req.body;
 
@@ -83,7 +83,7 @@ app.post("/ai-notes", async (req, res) => {
   }
 
   if (!process.env.GROQ_API_KEY) {
-    return res.status(500).json({ error: "GROQ API key missing" });
+    return res.status(500).json({ error: "API key missing" });
   }
 
   try {
@@ -105,12 +105,10 @@ app.post("/ai-notes", async (req, res) => {
 Topic: ${topic}
 
 Format:
-1. Definition (2 lines)
-2. Key Points (5-6 bullets)
+1. Definition
+2. Key Points
 3. Important Terms
-4. Quick Summary (3 lines)
-
-Keep it short and exam-focused.`
+4. Summary`
             }
           ]
         })
@@ -119,9 +117,8 @@ Keep it short and exam-focused.`
 
     const data = await response.json();
 
-    // 🔥 Proper error logging
     if (!data.choices) {
-      console.error("GROQ ERROR:", JSON.stringify(data, null, 2));
+      console.error(data);
       return res.status(500).json({ error: "AI failed" });
     }
 
@@ -130,17 +127,16 @@ Keep it short and exam-focused.`
     });
 
   } catch (err) {
-    console.error("SERVER ERROR:", err);
+    console.error(err);
     res.status(500).json({ error: "AI failed" });
   }
 });
 
-// ── ROOT ──
+// ROOT
 app.get("/", (req, res) => {
-  res.send("✅ NotesPro Backend Running (Groq)");
+  res.send("✅ NotesPro Backend Running");
 });
 
-// ── SERVER ──
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
