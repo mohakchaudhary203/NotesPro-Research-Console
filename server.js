@@ -74,7 +74,7 @@ app.get("/history/:username", (req, res) => {
   res.json(user ? user.history : []);
 });
 
-// AI NOTES (Groq)
+// 🔥 AI NOTES (MAX QUALITY VERSION)
 app.post("/ai-notes", async (req, res) => {
   const { topic } = req.body;
 
@@ -96,23 +96,67 @@ app.post("/ai-notes", async (req, res) => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          // ✅ FIXED MODEL (IMPORTANT)
           model: "llama-3.1-8b-instant",
 
           messages: [
             {
               role: "user",
-              content: `Create FAST REVISION NOTES for exam.
+              content: `You are an expert teacher, mentor, and exam strategist.
+
+Create VERY DETAILED, HIGH-QUALITY notes.
 
 Topic: ${topic}
 
-Format:
-1. Definition (2 lines)
-2. Key Points (5-6 bullets)
-3. Important Terms
-4. Quick Summary (3 lines)
+Follow structure:
 
-Keep it simple and exam-focused.`
+📌 1. Definition:
+- 2–3 lines
+
+📌 2. Core Concept:
+- Explain in 2–3 short paragraphs
+
+📌 3. Why It Matters:
+- Importance of topic
+
+📌 4. Key Points:
+- 8–10 bullets
+
+📌 5. Important Terms:
+- 8–12 keywords with meanings
+
+📌 6. Examples:
+- 3–4 examples
+
+📌 7. Applications:
+- 4–6 uses
+
+📌 8. Advantages:
+- 4–5 points
+
+📌 9. Disadvantages:
+- 3–4 points
+
+📌 10. Common Mistakes:
+- 3–5 points
+
+📌 11. Exam Tips:
+- What to write for full marks
+
+📌 12. Quick Revision:
+- Short bullets
+
+📌 13. Memory Tricks:
+- Simple mnemonics
+
+📌 14. Summary:
+- 5–6 lines
+
+Rules:
+- Mix paragraphs + bullet points
+- Keep language simple
+- Avoid repetition
+- Make it exam-focused + easy to revise
+`
             }
           ]
         })
@@ -138,7 +182,7 @@ Keep it simple and exam-focused.`
 
 // ROOT
 app.get("/", (req, res) => {
-  res.send("✅ NotesPro Backend Running");
+  res.send("✅ NotesPro Backend Running (Final)");
 });
 
 const PORT = process.env.PORT || 3000;
