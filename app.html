@@ -26,38 +26,34 @@
     <!-- Page Title -->
     <div class="page-title-bar">
       <h2>Knowledge Research Module</h2>
-      <span class="course-tag">Wikipedia API · Server-side Storage</span>
-    </div>
-
-    <!-- Backend Status -->
-    <div class="status-bar">
-      <div class="status-dot" id="statusDot"></div>
-      <span id="statusText">Checking server connection…</span>
+      <span class="course-tag">AI Notes · Voice · PDF Export</span>
     </div>
 
     <!-- Search Panel -->
     <div class="search-panel">
       <div class="search-panel-label">Search Query</div>
+
       <div class="search-row">
         <div class="search-wrapper">
           <span class="search-icon">🔍</span>
-          <input type="text" id="topic" placeholder="Enter a topic to generate structured notes…">
+          <input type="text" id="topic" placeholder="Enter a topic...">
         </div>
+
         <button class="btn-search" onclick="getNotes()">Generate</button>
       </div>
+
+      <!-- 🔥 FIXED BUTTONS -->
       <div class="tool-row">
-        <button class="btn-tool" onclick="startVoice()">🎤 Voice Input</button>
-        <button class="btn-tool" onclick="downloadPDF()">📄 Export PDF</button>
+        <button class="btn-tool" onclick="startVoiceSearch()">🎤 Voice Input</button>
+        <button class="btn-tool" onclick="downloadNotes()">📄 Export PDF</button>
+        <button class="btn-tool" onclick="speakNotes()">🔊 Listen</button>
       </div>
     </div>
-
-    <!-- Suggestions -->
-    <ul id="suggestions"></ul>
 
     <!-- Loader -->
     <div id="loader" class="loader hidden">
       <div class="loader-ring"></div>
-      <span>Retrieving data, please wait…</span>
+      <span>Generating notes...</span>
     </div>
 
     <!-- Output -->
@@ -76,7 +72,11 @@
 
   </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="script.js"></script>
+  <!-- 🔥 REQUIRED FOR REAL PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- MAIN SCRIPT -->
+  <script src="script.js"></script>
+
 </body>
 </html>
